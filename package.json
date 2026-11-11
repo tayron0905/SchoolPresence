@@ -2,17 +2,16 @@
   "name": "schoolpresence",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
-  "scripts": {"dev":"vite --host 0.0.0.0","start":"node server.js","build":"vite build"},
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
   "keywords": [],
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^13.0.3",
-    "express": "^5.3.0",
-    "express-rate-limit": "^8.7.4",
-    "express-session": "^1.19.0",
-    "helmet": "^8.3.0"
+    "@supabase/supabase-js": "^2.119.0"
   },
   "devDependencies": {
     "vite": "^8.3.8"

@@ -1,12 +1,16 @@
 # SchoolPresence
 
-Digitale Schul- und Anwesenheitsverwaltung für die fiktive Entwicklungsinstanz „Schule an der Ruhraue“. Die Oberfläche folgt den Designreferenzen aus der Bauanleitung: marineblaue Navigation, klare Karten, Kennzahlen und eine farblich und textlich ausgezeichnete Anwesenheitsliste.
+Responsive digitale Schul- und Anwesenheitsverwaltung für die fiktive Entwicklungsinstanz „Schule an der Ruhraue“. Das Frontend wird als statische Vite-App ausgeliefert; Supabase stellt PostgreSQL, Auth und abgesicherte Datenzugriffe bereit.
 
-## Aktueller Stand
+## Supabase-Projekt einrichten
 
-Enthalten sind die responsive Weboberfläche, serverseitige Anmeldung und Rollenprüfung, SQLite-Datenspeicherung, Klassen- und Schüleranlage, Anwesenheitssitzungen samt offener und abgeschlossener Listen, Änderungsprotokoll, rollenbeschränkte CSV-Berichte, Statistiken auf Basis gespeicherter Daten, Schulprofil und Benutzerverwaltung. Beispieldaten sind fiktiv.
+1. Im SQL Editor des Projekts `bqoxpwerrrsrfdvpelnh` den Inhalt aus `supabase/migrations/202611110001_schoolpresence.sql` einmal vollständig ausführen. Dadurch werden Tabellen, Indizes, Berechtigungsfunktionen, RLS-Regeln und ausschließlich fiktive Klassen-/Schülerdaten angelegt.
+2. In **Authentication → Users** einen ersten Admin-Benutzer anlegen.
+3. Im SQL Editor den letzten Setup-Block aus der Migration mit der Admin-E-Mail ausführen, indem `YOUR-ADMIN-EMAIL` ersetzt wird. Er verknüpft das Auth-Konto mit der Schule und Rolle `admin`.
+4. In **Settings → API Keys** den **Publishable Key** ablesen. Nur dieser öffentliche Schlüssel kommt in die Browser-App. Einen `sb_secret_…`-Key niemals veröffentlichen oder in Browser-Konfiguration bzw. GitHub-Quellcode eintragen.
+5. Für lokale Nutzung `.env.example` nach `.env` kopieren und die Projekt-URL sowie den Publishable Key eintragen.
 
-Einige Menüpunkte sind bereits als verständliche Oberfläche vorhanden, ihre Verwaltungsabläufe sind noch nicht implementiert: Entschuldigungsbearbeitung, Stundenplanänderungen und Konfliktprüfung, Vertretungsspeicherung und interne Benachrichtigungen. Auch Passwortänderung/-zurücksetzung, kontoverwaltete Rollenberechtigungen, Aufbewahrungs- und Löschläufe sowie automatisierte Tests fehlen. Die Anwendung ist ein Entwicklungsstand und noch nicht für echte Schülerdaten oder den produktiven Schuleinsatz freigegeben.
+Die Supabase-URL des verknüpften Projekts lautet `https://bqoxpwerrrsrfdvpelnh.supabase.co`.
 
 ## Lokal starten
 
@@ -15,31 +19,33 @@ Voraussetzung: Node.js 20 oder neuer.
 ```sh
 npm install
 cp .env.example .env
-# SESSION_SECRET in .env durch einen langen, zufälligen Wert ersetzen
-npm run build
-npm start
+# VITE_SUPABASE_PUBLISHABLE_KEY in .env ergänzen
+npm run dev
 ```
 
-Dann `http://localhost:3000` öffnen. Für die Frontend-Entwicklung in einem Terminal `npm start` und in einem zweiten `npm run dev` ausführen; Vite läuft unter `http://localhost:5173`.
+Vite zeigt danach die lokale URL an. Für einen produktionsnahen lokalen Build `npm run build` und anschließend `npm run preview` verwenden.
 
-## Fiktive Demo-Zugänge
+## GitHub Pages
 
-Alle drei Rollen verwenden ausschließlich für die lokale Erstinstallation dasselbe temporäre Demo-Passwort `Schule2026!`:
+Das Repository enthält einen Actions-Workflow unter `.github/workflows/deploy-pages.yml`. In den GitHub-Repository-Einstellungen unter **Secrets and variables → Actions** müssen diese Repository-Secrets gesetzt sein:
 
-| Rolle | E-Mail |
-| --- | --- |
-| Administrator | `admin@schoolpresence.local` |
-| Schulleitung | `leitung@schoolpresence.local` |
-| Lehrkraft | `mara@schoolpresence.local` |
+- `VITE_SUPABASE_URL` = `https://bqoxpwerrrsrfdvpelnh.supabase.co`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = Publishable Key aus Supabase
 
-Die SQLite-Datenbank entsteht beim ersten Serverstart in `data/schoolpresence.sqlite`. Zum Zurücksetzen der Beispieldaten Server beenden und diese lokale Datei löschen.
+Danach bei **Settings → Pages** die Bereitstellung über **GitHub Actions** aktivieren. Jeder Push auf `main` baut und veröffentlicht das Frontend. Der Publishable Key ist dafür vorgesehen, im Browser aufzutauchen; Row Level Security schützt die Daten. Der Secret Key darf nicht als Vite-Variable oder GitHub-Pages-Secret in den Frontend-Build gelangen.
 
-## Datenmodell
+## Benutzerverwaltung
 
-Das SQLite-Schema wird beim Serverstart in `server.js` angelegt und enthält Schulen, Benutzer, Klassen, Schüler, Fächer, Anwesenheitssitzungen, Anwesenheitseinträge, Benachrichtigungen und Audit-Logs. Fremdschlüssel, eindeutige Sitzungs- und Schülerkombinationen, Statusprüfungen und Transaktionen schützen kritische Anwesenheitsschreibvorgänge. `school_id` grenzt Abfragen schulbezogen ein. Die Schultabellen werden aktuell als Schema zur späteren Mehrschulerweiterung genutzt; ein automatisierter Migrationen-Workflow fehlt noch.
+Öffentliche Registrierung ist deaktiviert. Der initiale Admin wird einmalig im Supabase Dashboard erzeugt und per SQL mit der Schulrolle verknüpft. Weitere Benutzer werden über die Supabase Edge Function `create-user` angelegt. Die Funktion prüft den aufrufenden Admin und verwendet einen serverseitigen Supabase Secret Key.
 
-## Betrieb und Veröffentlichung
+Die Funktion kann mit der Supabase CLI bereitgestellt werden. Ein Secret Key muss dabei ausschließlich als Edge-Function-Secret gesetzt werden, zum Beispiel `supabase secrets set SUPABASE_SECRET_KEY=...`; nie in GitHub Pages oder `.env` für den Browser.
 
-Für einen Serverbetrieb müssen mindestens ein zufälliges `SESSION_SECRET`, HTTPS, ein dauerhaftes beschränktes Datenvolume für `DATA_DIR`, Backups und getestete Wiederherstellung eingerichtet werden. In Produktion sollte ein dauerhafter Session-Store statt des Express-Memory-Stores konfiguriert und das Admin-Demopasswort nach dem initialen Setup geändert werden. Setze `NODE_ENV=production` hinter einem vertrauenswürdigen HTTPS-Proxy; sichere Cookies werden dann vorausgesetzt. Lege `.env` und den Datenordner niemals in GitHub ab.
+## Funktionen und Grenzen
 
-GitHub Pages kann diese Anwendung nicht ausführen, da die API einen Node-Server und eine dauerhafte SQLite-Datei benötigt. Ein GitHub-Repository kann den Quellcode aufnehmen; für eine öffentliche lauffähige Website ist zusätzlich ein Node-fähiger Hoster mit persistentem Speicher erforderlich. Vor echtem Schulbetrieb sind Hosting, Datenschutz, Rechtsgrundlage, Rollen, Auftragsverarbeitung und Aufbewahrung durch die Schule freizugeben.
+Enthalten: Supabase-Anmeldung, rollen- und schulbezogene RLS-Regeln, Klassen- und Schülerübersicht und -anlage, Anwesenheitssitzungen und Status, atomare Speicherung/Abschluss per PostgreSQL-Funktion, Änderungs-Audit für Anwesenheit, CSV-Berichte, Auswertungen, Schulprofil, Admin-Kontenanlage und GitHub-Pages-Workflow.
+
+Noch offen: historische Klassenmitgliedschaften/Schuljahreswechsel, Schüler-Selbstzugang mit eigener Profilbeschränkung, Änderungsdialog für Klassen/Schüler, Lehrkraftzuordnung in der Oberfläche, Entschuldigungsbearbeitung, Stundenplan-/Konfliktverwaltung, Vertretungen, persistente interne Benachrichtigungen und automatisierte Unit-/Integrations-/E2E-Tests. Die Menüs hierfür sind teilweise nur Gerüste. Nicht für echte Schülerdaten oder produktiven Schuleinsatz freigegeben.
+
+Anwesenheitsquote: (anwesend + verspätet) geteilt durch alle kontrollierten Einträge; nicht kontrollierte Einträge werden ausgeschlossen. Die DB-Funktion verhindert den Abschluss, wenn Einträge fehlen oder offen sind. Session-Tokens bleiben in `sessionStorage` und werden beim Schließen des Browser-Tabs entfernt.
+
+Vor echtem Schulbetrieb müssen Datenschutzverantwortliche Hosting, Rechtsgrundlage, Auftragsverarbeitung, Berechtigungen, Aufbewahrung und Löschkonzept freigeben. Einrichten und testen: Backups, Wiederherstellung, Rate Limits und Auth-Mail-/Passwortabläufe.
