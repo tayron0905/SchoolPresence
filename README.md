@@ -4,7 +4,7 @@ Responsive digitale Schul- und Anwesenheitsverwaltung. Das Frontend wird als sta
 
 ## Supabase-Projekt einrichten
 
-1. Im SQL Editor der Reihe nach `supabase/migrations/202611110001_schoolpresence.sql` und `supabase/migrations/202611120002_extended_school_management.sql` vollständig ausführen. Zusammen erstellen sie Tabellen, Indizes, Funktionen, RLS-Regeln und ausschließlich fiktive Klassen-/Schülerdaten.
+1. Im SQL Editor der Reihe nach `supabase/migrations/202611110001_schoolpresence.sql`, `supabase/migrations/202611120002_extended_school_management.sql` und `supabase/migrations/202611130003_user_deletion.sql` vollständig ausführen. Zusammen erstellen sie Tabellen, Indizes, Funktionen, RLS-Regeln und ausschließlich fiktive Klassen-/Schülerdaten.
 2. In **Authentication → Users** einen ersten Auth-Benutzer anlegen.
 3. Im SQL Editor `supabase/bootstrap-admin.sql` ausführen. Die Datei verknüpft die mitgeteilte Auth-User-ID mit der Schule und Rolle `admin`.
 4. In **Settings → API Keys** den **Publishable Key** ablesen. Nur dieser öffentliche Schlüssel kommt in die Browser-App. Einen `sb_secret_…`-Key niemals veröffentlichen oder in Browser-Konfiguration bzw. GitHub-Quellcode eintragen.

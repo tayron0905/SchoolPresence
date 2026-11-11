@@ -63,6 +63,7 @@ export async function api(path, options={}) {
   if(path==='/admin/users'&&method==='POST'){const {data,error}=await supabase.functions.invoke('create-user',{body});fail(error);if(data?.error)throw new Error(data.error);return data;}
   const adminUser=path.match(/^\/admin\/users\/([^/]+)$/);
   if(adminUser&&method==='PUT'){const {data,error}=await supabase.functions.invoke('update-user',{body:{...body,id:adminUser[1]}});fail(error);if(data?.error)throw new Error(data.error);return data;}
+  if(adminUser&&method==='DELETE'){const {data,error}=await supabase.functions.invoke('update-user',{body:{id:adminUser[1],action:'delete'}});fail(error);if(data?.error)throw new Error(data.error);return data;}
   if(path==='/settings/school'&&method==='PUT'){const user=await profile();return query(supabase.from('schools').update({name:body.name,address:body.address,school_year:body.schoolYear}).eq('id',user.schoolId));}
   if(path==='/absences'&&method==='GET'){
     let q=supabase.from('attendance_records').select('id,status,updated_at,student_id,students!inner(first_name,last_name,student_code,class_id,classes(name)),attendance_sessions!inner(id,session_date,period,subject_id,subjects(name)),absence_details(note,reviewed_at)').in('status',['excused','unexcused','late']).order('updated_at',{ascending:false});
