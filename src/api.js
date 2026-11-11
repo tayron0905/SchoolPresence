@@ -10,6 +10,8 @@ export const supabase = supabaseReady ? createClient(url, key, {
 const fail = (error) => { if (error) throw new Error(error.message || 'Supabase-Anfrage fehlgeschlagen.'); };
 const uid = () => crypto.randomUUID();
 const profile = async () => {
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession(); fail(sessionError);
+  if (!session) return null;
   const { data: { user }, error } = await supabase.auth.getUser(); fail(error);
   if (!user) return null;
   const { data, error: e } = await supabase.from('profiles').select('id,school_id,name,email,role,active').eq('id', user.id).single(); fail(e);
