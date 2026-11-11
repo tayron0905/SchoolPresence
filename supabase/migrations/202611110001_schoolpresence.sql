@@ -136,4 +136,4 @@ grant execute on function public.save_attendance(uuid,jsonb,boolean,text) to aut
 
 -- Create only the school container and standard subjects; no sample classes or students.
 insert into public.schools(id,name,address,school_year,timezone) values('11111111-1111-4111-8111-111111111111','Meine Schule','','2026/2027','Europe/Berlin') on conflict(id) do nothing;
-insert into public.subjects(school_id,name) select '11111111-1111-4111-8111-111111111111',n from unnest(array['Mathematik','Deutsch','Englisch','Biologie','Geschichte']) n on conflict(school_id,name) do nothing;
+insert into public.subjects(school_id,name) select '11111111-1111-4111-8111-111111111111',n from unnest(array['Mathematik','Deutsch','Englisch','Biologie','Geschichte','Chemie','Erdkunde','Ethik','Französisch','Hauswirtschaft','Informatik','Kunst','Latein','Musik','Naturwissenschaften','Pädagogik','Philosophie','Physik','Politik','Praktische Philosophie','Religion','Sozialwissenschaften','Spanisch','Sport','Technik','Wirtschaft']) n on conflict(school_id,name) do nothing;
