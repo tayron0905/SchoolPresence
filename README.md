@@ -4,11 +4,12 @@ Responsive digitale Schul- und Anwesenheitsverwaltung für die fiktive Entwicklu
 
 ## Supabase-Projekt einrichten
 
-1. Im SQL Editor des Projekts `bqoxpwerrrsrfdvpelnh` den Inhalt aus `supabase/migrations/202611110001_schoolpresence.sql` einmal vollständig ausführen. Dadurch werden Tabellen, Indizes, Berechtigungsfunktionen, RLS-Regeln und ausschließlich fiktive Klassen-/Schülerdaten angelegt.
-2. In **Authentication → Users** einen ersten Admin-Benutzer anlegen.
-3. Im SQL Editor den letzten Setup-Block aus der Migration mit der Admin-E-Mail ausführen, indem `YOUR-ADMIN-EMAIL` ersetzt wird. Er verknüpft das Auth-Konto mit der Schule und Rolle `admin`.
+1. Im SQL Editor der Reihe nach `supabase/migrations/202611110001_schoolpresence.sql` und `supabase/migrations/202611120002_extended_school_management.sql` vollständig ausführen. Zusammen erstellen sie Tabellen, Indizes, Funktionen, RLS-Regeln und ausschließlich fiktive Klassen-/Schülerdaten.
+2. In **Authentication → Users** einen ersten Auth-Benutzer anlegen.
+3. Im SQL Editor `supabase/bootstrap-admin.sql` ausführen. Die Datei verknüpft die mitgeteilte Auth-User-ID mit der Schule und Rolle `admin`.
 4. In **Settings → API Keys** den **Publishable Key** ablesen. Nur dieser öffentliche Schlüssel kommt in die Browser-App. Einen `sb_secret_…`-Key niemals veröffentlichen oder in Browser-Konfiguration bzw. GitHub-Quellcode eintragen.
 5. Für lokale Nutzung `.env.example` nach `.env` kopieren und die Projekt-URL sowie den Publishable Key eintragen.
+6. In **Authentication → URL Configuration** die GitHub-Pages-Adresse `https://tayron0905.github.io/SchoolPresence/` als Site URL bzw. erlaubte Redirect URL hinterlegen, damit Passwort-Reset-Links zurück zur App führen.
 
 Die Supabase-URL des verknüpften Projekts lautet `https://bqoxpwerrrsrfdvpelnh.supabase.co`.
 
@@ -25,6 +26,19 @@ npm run dev
 
 Vite zeigt danach die lokale URL an. Für einen produktionsnahen lokalen Build `npm run build` und anschließend `npm run preview` verwenden.
 
+## Tests
+
+`npm test` führt Unit-Tests für Anwesenheitsquoten und offene Einträge aus. Für die SQL-Verträge und RLS-Schemaregeln kann die lokale Supabase-Instanz verwendet werden:
+
+```sh
+npx supabase start
+npx supabase db reset
+npx supabase test db
+npx supabase stop
+```
+
+Die SQL-Tests prüfen Tabellen, Views, RLS-Aktivierung und die atomare Anwesenheitsfunktion. Vollständige Browser-Tests mit mehreren Rollen gegen ein eingerichtetes Supabase-Projekt sind noch nicht enthalten.
+
 ## GitHub Pages
 
 Das Repository enthält einen Actions-Workflow unter `.github/workflows/deploy-pages.yml`. In den GitHub-Repository-Einstellungen unter **Secrets and variables → Actions** müssen diese Repository-Secrets gesetzt sein:
@@ -38,23 +52,23 @@ Danach bei **Settings → Pages** die Bereitstellung über **GitHub Actions** ak
 
 Öffentliche Registrierung ist deaktiviert. Der initiale Admin wird einmalig im Supabase Dashboard erzeugt und per SQL mit der Schulrolle verknüpft. Weitere Benutzer werden über die Supabase Edge Function `create-user` angelegt. Die Funktion prüft den aufrufenden Admin und verwendet einen serverseitigen Supabase Secret Key.
 
-Die Funktion kann mit der Supabase CLI bereitgestellt werden:
+Die Edge Functions für Anlage und Änderung von Benutzern müssen mit der Supabase CLI bereitgestellt werden. Sie lesen den projektseitig injizierten Supabase Secret Key; lege dafür keinen zusätzlichen Schlüssel in GitHub oder im Frontend ab:
 
 ```sh
 npx supabase login
 npx supabase link --project-ref bqoxpwerrrsrfdvpelnh
-npx supabase secrets set SUPABASE_SECRET_KEY=<NEUER_ROTIERTER_SECRET_KEY>
 npx supabase functions deploy create-user
+npx supabase functions deploy update-user
 ```
 
-Ein Secret Key muss dabei ausschließlich als Edge-Function-Secret gesetzt werden; nie in GitHub Pages oder `.env` für den Browser.
+Der veröffentlichte Schlüssel, der im Frontend verwendet wird, ist ausschließlich der Publishable Key. Der Zugang zur App erfolgt mit persönlichen Supabase-Konten.
 
 ## Funktionen und Grenzen
 
-Enthalten: Supabase-Anmeldung, rollen- und schulbezogene RLS-Regeln, Klassen- und Schülerübersicht und -anlage, Anwesenheitssitzungen und Status, atomare Speicherung/Abschluss per PostgreSQL-Funktion, Änderungs-Audit für Anwesenheit, CSV-Berichte, Auswertungen, Schulprofil, Admin-Kontenanlage und GitHub-Pages-Workflow.
+Enthalten: Supabase-Anmeldung und Passwort-Reset/-Änderung, schulbezogene RLS, Klassen- und Schüleranlage/Bearbeitung/Archivierung, Klassenwechsel-Historie, Anwesenheitssitzungen mit atomarem Speichern und Abschließen, begründete Korrekturen, Fehlzeiten und geschützte interne Prüfanmerkungen, Schuljahre, Feiertage, Räume, Stundenplan mit Konfliktprüfung, Vertretungen mit Aufgabenbenachrichtigung, interne Benachrichtigungen, rollenbezogene CSV- und Druckberichte, Statistiken mit Zeitraumfiltern, Audit-Log und GitHub-Pages-Workflow.
 
-Noch offen: historische Klassenmitgliedschaften/Schuljahreswechsel, Schüler-Selbstzugang mit eigener Profilbeschränkung, Änderungsdialog für Klassen/Schüler, Lehrkraftzuordnung in der Oberfläche, Entschuldigungsbearbeitung, Stundenplan-/Konfliktverwaltung, Vertretungen, persistente interne Benachrichtigungen und automatisierte Unit-/Integrations-/E2E-Tests. Die Menüs hierfür sind teilweise nur Gerüste. Nicht für echte Schülerdaten oder produktiven Schuleinsatz freigegeben.
+Noch offen: Schüler-Selbstzugang, Schul-Logo/Unterrichtszeiten, Import, echte PDF-Erzeugung mit Kopf-/Fußzeile, Ferienkonflikte im Stundenplan sowie automatisierte vollständige Browser-/Mehrrollen-/Lasttests. GitHub Pages stellt das Frontend bereit; die beiden Edge Functions müssen noch mit der CLI deployed und beide SQL-Migrationen im Supabase-Projekt ausgeführt werden. Echte Daten erst nach Datenschutz- und Betriebsfreigabe verwenden.
 
 Anwesenheitsquote: (anwesend + verspätet) geteilt durch alle kontrollierten Einträge; nicht kontrollierte Einträge werden ausgeschlossen. Die DB-Funktion verhindert den Abschluss, wenn Einträge fehlen oder offen sind. Session-Tokens bleiben in `sessionStorage` und werden beim Schließen des Browser-Tabs entfernt.
 
-Vor echtem Schulbetrieb müssen Datenschutzverantwortliche Hosting, Rechtsgrundlage, Auftragsverarbeitung, Berechtigungen, Aufbewahrung und Löschkonzept freigeben. Einrichten und testen: Backups, Wiederherstellung, Rate Limits und Auth-Mail-/Passwortabläufe.
+Vor echtem Schulbetrieb müssen Datenschutzverantwortliche Hosting, Rechtsgrundlage, Auftragsverarbeitung, Berechtigungen, Aufbewahrung und Löschkonzept freigeben. Backups, Wiederherstellung, Auth-Mail-/Passwortabläufe und die RLS-Regeln müssen vor Freigabe in der tatsächlichen Projektkonfiguration geprüft werden.

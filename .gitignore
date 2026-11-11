@@ -1,6 +1,8 @@
 node_modules/
 dist/
 data/
+supabase/.temp/
+supabase/.branches/
 .env
 .DS_Store
 *.sqlite

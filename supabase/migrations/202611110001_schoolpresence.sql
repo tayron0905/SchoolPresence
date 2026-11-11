@@ -149,8 +149,3 @@ insert into public.students(school_id,first_name,last_name,student_code,class_id
 select '11111111-1111-4111-8111-111111111111',n.first_name,n.last_name,'DEMO-'||c.name||'-'||lpad(n.idx::text,2,'0'),c.id
 from public.classes c cross join (values (1,'Lena','Hoffmann'),(2,'Ben','Fischer'),(3,'Mia','Schneider'),(4,'Noah','Weber'),(5,'Emma','Wagner'),(6,'Paul','Becker'),(7,'Sofia','Schulz'),(8,'Elias','Hoffmann'),(9,'Lea','Koch'),(10,'Leon','Bauer'),(11,'Amira','Richter'),(12,'Finn','Klein'),(13,'Hannah','Wolf'),(14,'Oskar','Neumann'),(15,'Mila','Schwarz')) as n(idx,first_name,last_name)
 where c.school_id='11111111-1111-4111-8111-111111111111' on conflict(school_id,student_code) do nothing;
-
--- One-time setup after creating an Auth user in Authentication > Users:
--- insert into public.profiles(id,school_id,name,email,role)
--- select id,'11111111-1111-4111-8111-111111111111','School Admin',email,'admin'
--- from auth.users where email='YOUR-ADMIN-EMAIL';

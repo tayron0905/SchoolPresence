@@ -6,7 +6,8 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return Response.json({ error: 'Method not allowed' }, { status: 405, headers: cors });
   const url = Deno.env.get('SUPABASE_URL')!;
   const publishable = Deno.env.get('SUPABASE_ANON_KEY')!;
-  const secret = Deno.env.get('SUPABASE_SECRET_KEY') ?? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  let secret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  try { secret = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}').default ?? secret; } catch { /* keep legacy key fallback */ }
   if (!secret) return Response.json({ error: 'Secret-Key für die Benutzerverwaltung ist nicht eingerichtet.' }, { status: 500, headers: cors });
   const caller = createClient(url, publishable, { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } }, auth: { persistSession: false } });
   const admin = createClient(url, secret, { auth: { persistSession: false } });
@@ -17,7 +18,7 @@ Deno.serve(async (req) => {
   let input: {name?:string;email?:string;password?:string;role?:string};
   try { input = await req.json(); } catch { return Response.json({ error: 'Ungültige Anfrage.' }, { status: 400, headers: cors }); }
   const name = String(input.name ?? '').trim(); const email = String(input.email ?? '').trim().toLowerCase(); const password = String(input.password ?? '');
-  if (!name || !/^\S+@\S+\.\S+$/.test(email) || password.length < 12 || !['leadership','teacher','student'].includes(String(input.role))) return Response.json({ error: 'Name, gültige E-Mail, Passwort mit mindestens 12 Zeichen und erlaubte Rolle angeben.' }, { status: 400, headers: cors });
+  if (!name || !/^\S+@\S+\.\S+$/.test(email) || password.length < 12 || !['admin','leadership','teacher'].includes(String(input.role))) return Response.json({ error: 'Name, gültige E-Mail, Passwort mit mindestens 12 Zeichen und erlaubte Rolle angeben.' }, { status: 400, headers: cors });
   const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name } });
   if (error || !data.user) return Response.json({ error: error?.message ?? 'Benutzer konnte nicht erstellt werden.' }, { status: 400, headers: cors });
   const { error: profileError } = await admin.from('profiles').insert({ id: data.user.id, school_id: callerProfile.school_id, name, email, role: input.role });

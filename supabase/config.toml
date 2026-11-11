@@ -2,3 +2,6 @@ project_id = "bqoxpwerrrsrfdvpelnh"
 
 [functions.create-user]
 verify_jwt = true
+
+[functions.update-user]
+verify_jwt = true
