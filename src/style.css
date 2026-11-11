@@ -13,3 +13,5 @@
 .search{position:relative}.search-results{position:absolute;z-index:40;top:calc(100% + 8px);left:0;right:0;background:var(--panel);border:1px solid var(--border);border-radius:9px;box-shadow:0 15px 38px #06182e26;padding:5px;max-height:360px;overflow:auto}.search-results[hidden]{display:none}.search-results button{display:block;width:100%;border:0;background:none;text-align:left;padding:9px;border-radius:6px;color:var(--text)}.search-results button:hover{background:var(--bg)}.search-results b,.search-results small{display:block}.search-results b{font-size:10px}.search-results small,.search-empty{font-size:9px;color:var(--muted);margin-top:3px}.search-empty{padding:12px}
 
 .user-actions{display:flex;align-items:center;gap:6px}.small-danger{border:1px solid #e85c6650;background:#e85c6612;color:#e85c66;border-radius:6px;padding:7px 9px;font-size:9px}.small-danger:hover{background:#e85c6622}.small-danger:disabled{opacity:.45;cursor:not-allowed}
+
+.download-apk-link{display:block;margin:18px auto 0;width:max-content;color:#7eb2ff;font-size:12px;text-decoration:none}.download-apk-link:hover{text-decoration:underline}
