@@ -38,7 +38,16 @@ Danach bei **Settings → Pages** die Bereitstellung über **GitHub Actions** ak
 
 Öffentliche Registrierung ist deaktiviert. Der initiale Admin wird einmalig im Supabase Dashboard erzeugt und per SQL mit der Schulrolle verknüpft. Weitere Benutzer werden über die Supabase Edge Function `create-user` angelegt. Die Funktion prüft den aufrufenden Admin und verwendet einen serverseitigen Supabase Secret Key.
 
-Die Funktion kann mit der Supabase CLI bereitgestellt werden. Ein Secret Key muss dabei ausschließlich als Edge-Function-Secret gesetzt werden, zum Beispiel `supabase secrets set SUPABASE_SECRET_KEY=...`; nie in GitHub Pages oder `.env` für den Browser.
+Die Funktion kann mit der Supabase CLI bereitgestellt werden:
+
+```sh
+npx supabase login
+npx supabase link --project-ref bqoxpwerrrsrfdvpelnh
+npx supabase secrets set SUPABASE_SECRET_KEY=<NEUER_ROTIERTER_SECRET_KEY>
+npx supabase functions deploy create-user
+```
+
+Ein Secret Key muss dabei ausschließlich als Edge-Function-Secret gesetzt werden; nie in GitHub Pages oder `.env` für den Browser.
 
 ## Funktionen und Grenzen
 

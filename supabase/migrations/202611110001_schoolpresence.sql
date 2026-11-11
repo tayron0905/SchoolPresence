@@ -53,7 +53,7 @@ create table if not exists public.notifications (
   user_id uuid references public.profiles(id), title text not null, body text not null,
   read boolean not null default false, created_at timestamptz not null default now()
 );
-revoke all on all tables in schema public from anon;
+revoke all on public.schools,public.profiles,public.classes,public.students,public.subjects,public.attendance_sessions,public.attendance_records,public.audit_logs,public.notifications from anon;
 grant select,insert,update,delete on public.schools,public.profiles,public.classes,public.students,public.subjects,public.attendance_sessions,public.attendance_records,public.audit_logs,public.notifications to authenticated;
 create index if not exists students_school_class_idx on public.students(school_id,class_id,last_name);
 create index if not exists sessions_school_date_idx on public.attendance_sessions(school_id,session_date desc);
@@ -74,7 +74,9 @@ revoke all on function private.current_school_id() from public;
 revoke all on function private.has_role(text[]) from public;
 revoke all on function private.can_access_class(uuid) from public;
 grant usage on schema private to authenticated;
-grant execute on all functions in schema private to authenticated;
+grant execute on function private.current_school_id() to authenticated;
+grant execute on function private.has_role(text[]) to authenticated;
+grant execute on function private.can_access_class(uuid) to authenticated;
 
 alter table public.schools enable row level security;
 alter table public.profiles enable row level security;
@@ -98,7 +100,7 @@ create policy students_create on public.students for insert to authenticated wit
 create policy students_update on public.students for update to authenticated using(school_id=private.current_school_id() and private.has_role(array['admin','leadership'])) with check(school_id=private.current_school_id() and private.has_role(array['admin','leadership']) and private.can_access_class(class_id));
 create policy subjects_read on public.subjects for select to authenticated using(school_id=private.current_school_id());
 create policy sessions_read on public.attendance_sessions for select to authenticated using(school_id=private.current_school_id() and private.can_access_class(class_id));
-create policy sessions_create on public.attendance_sessions for insert to authenticated with check(school_id=private.current_school_id() and private.can_access_class(class_id) and (private.has_role(array['admin','leadership']) or teacher_id=auth.uid()));
+create policy sessions_create on public.attendance_sessions for insert to authenticated with check(school_id=private.current_school_id() and status='open' and private.can_access_class(class_id) and (private.has_role(array['admin','leadership']) or teacher_id=auth.uid()));
 create policy records_read on public.attendance_records for select to authenticated using(exists(select 1 from public.attendance_sessions s where s.id=session_id and s.school_id=private.current_school_id() and private.can_access_class(s.class_id)));
 create policy audit_read on public.audit_logs for select to authenticated using(school_id=private.current_school_id() and private.has_role(array['admin','leadership']));
 create policy notifications_read on public.notifications for select to authenticated using(school_id=private.current_school_id() and (user_id is null or user_id=auth.uid()) and private.has_role(array['admin','leadership','teacher']));

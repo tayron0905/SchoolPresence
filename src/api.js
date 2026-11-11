@@ -17,8 +17,8 @@ const profile = async () => {
 };
 const query = async (q) => { const {data,error}=await q;fail(error);return data; };
 const attendanceSessions = async () => {
-  const sessions = await query(supabase.from('attendance_sessions').select('id,school_id,class_id,session_date,period,subject_id,teacher_id,status,classes(name,students(id)),subjects(name),profiles(name),attendance_records(id)').order('session_date',{ascending:false}).order('period'));
-  return sessions.map(s=>({ ...s, class_name:s.classes?.name, subject_name:s.subjects?.name, teacher_name:s.profiles?.name, recorded:s.attendance_records?.length||0, total:s.classes?.students?.length||0 }));
+  const sessions = await query(supabase.from('attendance_sessions').select('id,school_id,class_id,session_date,period,subject_id,teacher_id,status,classes(name,students(id)),subjects(name),profiles(name),attendance_records(id,status)').order('session_date',{ascending:false}).order('period'));
+  return sessions.map(s=>{const counts={present:0,excused:0,unexcused:0,late:0,unchecked:0};(s.attendance_records||[]).forEach(r=>counts[r.status]++);return { ...s, class_name:s.classes?.name, subject_name:s.subjects?.name, teacher_name:s.profiles?.name, recorded:s.attendance_records?.length||0, total:s.classes?.students?.length||0, counts };});
 };
 
 export async function api(path, options={}) {
