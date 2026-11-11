@@ -270,7 +270,9 @@ begin
  else old_json:=to_jsonb(old);new_json:=to_jsonb(new);event:='updated'; end if;
  if tg_table_name='schools' then school:=new.id; else school:=new.school_id; end if;
  target:=new.id::text;
- if tg_table_name='classes' and tg_op='UPDATE' and old.active and not new.active then event:='archived'; end if;
+ if tg_table_name='classes' and tg_op='UPDATE' then
+   if old.active and not new.active then event:='archived'; end if;
+ end if;
  insert into public.audit_logs(school_id,user_id,action,entity,entity_id,old_value,new_value) values(school,auth.uid(),event,tg_table_name,target,old_json,new_json);
  return new;
 end $$;

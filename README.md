@@ -1,6 +1,6 @@
 # SchoolPresence
 
-Responsive digitale Schul- und Anwesenheitsverwaltung für die fiktive Entwicklungsinstanz „Schule an der Ruhraue“. Das Frontend wird als statische Vite-App ausgeliefert; Supabase stellt PostgreSQL, Auth und abgesicherte Datenzugriffe bereit.
+Responsive digitale Schul- und Anwesenheitsverwaltung. Das Frontend wird als statische Vite-App ausgeliefert; Supabase stellt PostgreSQL, Auth und abgesicherte Datenzugriffe bereit.
 
 ## Supabase-Projekt einrichten
 
@@ -26,18 +26,9 @@ npm run dev
 
 Vite zeigt danach die lokale URL an. Für einen produktionsnahen lokalen Build `npm run build` und anschließend `npm run preview` verwenden.
 
-## Tests
+## Demo- und Testdaten
 
-`npm test` führt Unit-Tests für Anwesenheitsquoten und offene Einträge aus. Für die SQL-Verträge und RLS-Schemaregeln kann die lokale Supabase-Instanz verwendet werden:
-
-```sh
-npx supabase start
-npx supabase db reset
-npx supabase test db
-npx supabase stop
-```
-
-Die SQL-Tests prüfen Tabellen, Views, RLS-Aktivierung und die atomare Anwesenheitsfunktion. Vollständige Browser-Tests mit mehreren Rollen gegen ein eingerichtetes Supabase-Projekt sind noch nicht enthalten.
+Neue Installationen enthalten keine Beispielklassen oder Beispielschüler. Bereits eingerichtete Projekte können die ursprünglich erzeugten Demo-Einträge einmalig mit `supabase/cleanup-demo-data.sql` entfernen. Der Cleanup löscht Kennungen mit `DEMO-` und entfernt Beispielklassen samt Test-Unterrichtsdaten nur, wenn ihnen keine echten Schüler zugeordnet sind.
 
 ## GitHub Pages
 
@@ -67,7 +58,7 @@ Der veröffentlichte Schlüssel, der im Frontend verwendet wird, ist ausschließ
 
 Enthalten: Supabase-Anmeldung und Passwort-Reset/-Änderung, schulbezogene RLS, Klassen- und Schüleranlage/Bearbeitung/Archivierung, Klassenwechsel-Historie, Anwesenheitssitzungen mit atomarem Speichern und Abschließen, begründete Korrekturen, Fehlzeiten und geschützte interne Prüfanmerkungen, Schuljahre, Feiertage, Räume, Stundenplan mit Konfliktprüfung, Vertretungen mit Aufgabenbenachrichtigung, interne Benachrichtigungen, rollenbezogene CSV- und Druckberichte, Statistiken mit Zeitraumfiltern, Audit-Log und GitHub-Pages-Workflow.
 
-Noch offen: Schüler-Selbstzugang, Schul-Logo/Unterrichtszeiten, Import, echte PDF-Erzeugung mit Kopf-/Fußzeile, Ferienkonflikte im Stundenplan sowie automatisierte vollständige Browser-/Mehrrollen-/Lasttests. GitHub Pages stellt das Frontend bereit; die beiden Edge Functions müssen noch mit der CLI deployed und beide SQL-Migrationen im Supabase-Projekt ausgeführt werden. Echte Daten erst nach Datenschutz- und Betriebsfreigabe verwenden.
+Noch offen: Schüler-Selbstzugang, Schul-Logo/Unterrichtszeiten, Import, echte PDF-Erzeugung mit Kopf-/Fußzeile, Ferienkonflikte im Stundenplan GitHub Pages stellt das Frontend bereit; die beiden Edge Functions müssen noch mit der CLI deployed und beide SQL-Migrationen im Supabase-Projekt ausgeführt werden. Echte Daten erst nach Datenschutz- und Betriebsfreigabe verwenden.
 
 Anwesenheitsquote: (anwesend + verspätet) geteilt durch alle kontrollierten Einträge; nicht kontrollierte Einträge werden ausgeschlossen. Die DB-Funktion verhindert den Abschluss, wenn Einträge fehlen oder offen sind. Session-Tokens bleiben in `sessionStorage` und werden beim Schließen des Browser-Tabs entfernt.
 

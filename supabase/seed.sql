@@ -1,2 +1,0 @@
--- Fictional school and learner seed data is created by the versioned migrations.
--- Keep this file free of real student or staff information.

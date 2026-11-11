@@ -134,18 +134,6 @@ end $$;
 revoke all on function public.save_attendance(uuid,jsonb,boolean,text) from public,anon;
 grant execute on function public.save_attendance(uuid,jsonb,boolean,text) to authenticated;
 
--- Fictional demo school data only. After creating the first Auth account, assign it an admin profile in SQL Editor (see README).
-insert into public.schools(id,name,address,school_year,timezone) values('11111111-1111-4111-8111-111111111111','Schule an der Ruhraue','Essen','2026/2027','Europe/Berlin') on conflict(id) do nothing;
+-- Create only the school container and standard subjects; no sample classes or students.
+insert into public.schools(id,name,address,school_year,timezone) values('11111111-1111-4111-8111-111111111111','Meine Schule','','2026/2027','Europe/Berlin') on conflict(id) do nothing;
 insert into public.subjects(school_id,name) select '11111111-1111-4111-8111-111111111111',n from unnest(array['Mathematik','Deutsch','Englisch','Biologie','Geschichte']) n on conflict(school_id,name) do nothing;
-insert into public.classes(id,school_id,name,room) values
- ('11111111-1111-4111-8111-111111111101','11111111-1111-4111-8111-111111111111','5a','R. 12'),
- ('11111111-1111-4111-8111-111111111102','11111111-1111-4111-8111-111111111111','5b','R. 14'),
- ('11111111-1111-4111-8111-111111111103','11111111-1111-4111-8111-111111111111','6a','R. 21'),
- ('11111111-1111-4111-8111-111111111104','11111111-1111-4111-8111-111111111111','7a','R. 23'),
- ('11111111-1111-4111-8111-111111111105','11111111-1111-4111-8111-111111111111','8a','R. 31'),
- ('11111111-1111-4111-8111-111111111106','11111111-1111-4111-8111-111111111111','9a','R. 33'),
- ('11111111-1111-4111-8111-111111111107','11111111-1111-4111-8111-111111111111','10a','R. 41') on conflict(id) do nothing;
-insert into public.students(school_id,first_name,last_name,student_code,class_id)
-select '11111111-1111-4111-8111-111111111111',n.first_name,n.last_name,'DEMO-'||c.name||'-'||lpad(n.idx::text,2,'0'),c.id
-from public.classes c cross join (values (1,'Lena','Hoffmann'),(2,'Ben','Fischer'),(3,'Mia','Schneider'),(4,'Noah','Weber'),(5,'Emma','Wagner'),(6,'Paul','Becker'),(7,'Sofia','Schulz'),(8,'Elias','Hoffmann'),(9,'Lea','Koch'),(10,'Leon','Bauer'),(11,'Amira','Richter'),(12,'Finn','Klein'),(13,'Hannah','Wolf'),(14,'Oskar','Neumann'),(15,'Mila','Schwarz')) as n(idx,first_name,last_name)
-where c.school_id='11111111-1111-4111-8111-111111111111' on conflict(school_id,student_code) do nothing;
